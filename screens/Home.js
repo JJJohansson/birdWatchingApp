@@ -1,12 +1,13 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
 import {
-  Container, List, ListItem, Text, Body, Right, Button, Header,
-  Title, Subtitle, Left, Icon, Content
+  Container, H2, ListItem, Text, Body, Right, Button, Header,
+  Title, Subtitle, Left, Icon, Content, Accordion
 } from "native-base";
+import DropdownList from '../components/DropdownList.js';
 
 export default class Home extends React.Component {
-  static navigationOptions = {title: 'Home',};
+  static navigationOptions = { header: null };
   constructor(props) {
     super(props);
     this.state = {
@@ -45,34 +46,36 @@ export default class Home extends React.Component {
     }
 
     return (
-      <Container>
+      <Container style={{ backgroundColor: "#FE5F55" }}>
         <StatusBar hidden={true} />
-        <Header>
+        <Header style={{ backgroundColor: "#4F6367"}}>
           <Body>
-            <Title>Bird Watchersasdasdasd</Title>
-            <Subtitle>Mark your sightings</Subtitle>
+            <Title style={{marginLeft: 10}}>Bird_Watcher</Title>
           </Body>
           <Right>
             <Button hasText transparent onPress={() => navigate('Add', { text: "Hello from homepage!" })}>
-              <Text>Add</Text>
+              <Text>New</Text>
             </Button>
           </Right>
         </Header>
-        <Content>
+        <Content>{/*
           <List dataArray={this.state.array}
             style={{ marginTop: 25 }}
             renderRow={(bird) =>
               <ListItem>
+              <ListItem itemHeader first>
+                <Text>{ bird.timestamp }</Text>
+              </ListItem>
                 <TouchableOpacity
                   style={{ flexDirection: 'row', marginLeft: 5, marginRight: 5 }}
                   underlayColor="white"
                   itemHeader={"asd"}
                 >
                   <Left>
-                    <Text>{bird.timestamp}</Text>
+                    <Text>{bird.species}</Text>
                   </Left>
                   <Body>
-                    <Text note >{bird.species}, {bird.rarity}</Text>
+                    <Text>{bird.rarity}</Text>
                   </Body>
                   <Right>
                     <Icon name="arrow-forward" />
@@ -80,7 +83,8 @@ export default class Home extends React.Component {
                 </TouchableOpacity>
               </ListItem>
             }>
-          </List>
+          </List>*/}
+          <DropdownList birds={this.state.array} />
         </Content>
       </Container>
     );
@@ -89,9 +93,6 @@ export default class Home extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#000000',
   },
 });
