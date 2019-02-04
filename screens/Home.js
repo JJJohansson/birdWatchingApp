@@ -49,7 +49,7 @@ export default class Home extends React.Component {
         <StatusBar hidden={true} />
         <Header>
           <Body>
-            <Title>Bird Watchers</Title>
+            <Title>Bird Watchersasdasdasd</Title>
             <Subtitle>Mark your sightings</Subtitle>
           </Body>
           <Right>
