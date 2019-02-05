@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container, Header, Content, DatePicker, Text } from 'native-base';
+import { Content, DatePicker } from 'native-base';
 
 export default class DateComponent extends Component {
   constructor(props) {
@@ -16,17 +16,14 @@ export default class DateComponent extends Component {
     return (
         <Content>
           <DatePicker
-            defaultDate={new Date(2018, 4, 4)}
-            minimumDate={new Date(2018, 1, 1)}
-            maximumDate={new Date(2018, 12, 31)}
             locale={"en"}
             timeZoneOffsetInMinutes={undefined}
             modalTransparent={false}
             animationType={"fade"}
             androidMode={"default"}
             placeHolderText={this.state.chosenDate.toString().substr(4, 12)}
-            textStyle={{ color: "green" }}
-            placeHolderTextStyle={{ color: "#d3d3d3" }}
+            textStyle={{ color: "black" }}
+            placeHolderTextStyle={{ color: "black" }}
             onDateChange={this.setDate}
             disabled={false}
             />

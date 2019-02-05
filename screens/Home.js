@@ -1,10 +1,12 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
 import {
-  Container, H2, ListItem, Text, Body, Right, Button, Header,
-  Title, Subtitle, Left, Icon, Content, Accordion
+  Container, Text, Body, Right, Button, Header, Title, Content
 } from "native-base";
 import DropdownList from '../components/DropdownList.js';
+import { SQLite } from 'expo';
+
+const db = SQLite.openDatabase('birdwatcher.db');
 
 export default class Home extends React.Component {
   static navigationOptions = { header: null };
@@ -26,6 +28,7 @@ export default class Home extends React.Component {
           notes: "remember to bring a master ball"
         },
       ],
+      birds: []
     };
   }
 
@@ -36,6 +39,34 @@ export default class Home extends React.Component {
       'Roboto_medium': require('native-base/Fonts/Roboto_medium.ttf'),
     });
     this.setState({ isReady: true });
+  }
+
+  componentDidMount() {
+    // create the table if it doesn't exist already
+    db.transaction(transaction => {
+      transaction.executeSql(
+        'create table if not exists sightings (id integer primary key not null, species text not null, rarity text not null, timestamp text not null, latitude text, longitude text, notes text);'
+      );
+    });
+    this.query();
+    console.log('table found/created')
+  }
+
+  
+  query = () => {
+    db.transaction(transaction => {
+      transaction.executeSql('select * from sightings',
+        [],
+        (_, { rows: { _array } }) => this.setState({birds: _array}));
+    });
+  }
+
+  deleteDB = () => {
+    db.transaction(transaction => {
+      transaction.executeSql(
+        'drop table sightings;'
+      );
+    });
   }
 
   render() {
@@ -53,12 +84,36 @@ export default class Home extends React.Component {
             <Title style={{marginLeft: 10}}>Bird_Watcher</Title>
           </Body>
           <Right>
-            <Button hasText transparent onPress={() => navigate('Add', { text: "Hello from homepage!" })}>
+            <Button hasText transparent onPress={() => navigate('Add', { birds: this.state.birds })}>
               <Text>New</Text>
             </Button>
           </Right>
         </Header>
-        <Content>{/*
+        <Content>
+          <DropdownList birds={this.state.birds} />
+        </Content>
+      </Container>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#000000',
+  },
+});
+
+
+/*
+
+
+
+          <Button block rounded style={{width: 200, backgroundColor: 'gray', margin: 10}} 
+          onPress={() => this.deleteDB()}>
+            <Text>delete</Text>
+          </Button>
+
+
           <List dataArray={this.state.array}
             style={{ marginTop: 25 }}
             renderRow={(bird) =>
@@ -83,16 +138,4 @@ export default class Home extends React.Component {
                 </TouchableOpacity>
               </ListItem>
             }>
-          </List>*/}
-          <DropdownList birds={this.state.array} />
-        </Content>
-      </Container>
-    );
-  }
-}
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#000000',
-  },
-});
+          </List>*/

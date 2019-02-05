@@ -5,7 +5,10 @@ import {
   Input, Header, Body, Icon, Title
 } from "native-base";
 import DateComponent from '../components/DatePicker.js';
-import { Location, Permissions } from 'expo';
+import Timestamp from '../components/Timestamp.js';
+import { Location, Permissions, SQLite } from 'expo';
+
+const db = SQLite.openDatabase('birdwatcher.db');
 
 export default class Add extends React.Component {
   static navigationOptions = { header: null };
@@ -15,7 +18,7 @@ export default class Add extends React.Component {
     this.state = {
       isReady: false,
       species: '',
-      rarity: '',
+      rarity: 'Common',
       notes: '',
       timestamp: '',
       year: d.getFullYear(),
@@ -23,9 +26,9 @@ export default class Add extends React.Component {
       date: d.getDate(),
       hours: d.getHours(),
       minutes: d.getMinutes(),
-      selected2: undefined,
-      latitude: '',
-      longitude: '',
+      location: null,
+      latitude: null,
+      longitude: null,
     };
   }
 
@@ -34,7 +37,8 @@ export default class Add extends React.Component {
     await Expo.Font.loadAsync({
       'Roboto': require('native-base/Fonts/Roboto.ttf'),
       'Roboto_medium': require('native-base/Fonts/Roboto_medium.ttf'),
-    });
+    })
+    .then(this.getLocation());
     this.setState({ isReady: true });
   }
 
@@ -47,22 +51,35 @@ export default class Add extends React.Component {
       let location = await Location.getCurrentPositionAsync({ enableHighAccuracy: true });
       this.setState({ location, latitude: location.coords.latitude, longitude: location.coords.longitude })
     }
-}
+  }
+
+  query = () => {
+    db.transaction(transaction => {
+      transaction.executeSql('select * from sightings',
+        [],
+        (_, { rows: { _array } }) => console.log(_array));
+    });
+  }
 
   save = () => {
-    console.log('saved!')
-    this.getLocation();
+    const { params } = this.props.navigation.state;
+    const timestamp = `${this.state.date}.${this.state.month}.${this.state.year} / ${this.state.hours}:${this.state.minutes}`
+    console.log(params.birds.length);
+    db.transaction(transaction => {
+      transaction.executeSql('insert into sightings (id, species, rarity, timestamp, latitude, longitude, notes) values (?, ?, ?, ?, ?, ?, ?)',
+      [params.birds.length, this.state.species, this.state.rarity, timestamp, this.state.latitude, this.state.longitude, this.state.notes]);
+    }, null, this.query())
   }
 
   
   onValueChange2(value) {
     this.setState({
-      selected2: value
+      rarity: value
     });
   }
 
   render() {
-    const { params } = this.props.navigation.state;
+    let location = this.state.location ? `${this.state.latitude}, ${this.state.longitude}` : '';
 
     if (!this.state.isReady) {
       return <Expo.AppLoading />;
@@ -79,13 +96,17 @@ export default class Add extends React.Component {
           <Form style={{padding: 0}}>
             <Item>
               <Label>Date</Label>
-              <DateComponent />
+              <Timestamp />
+            </Item>
+            <Item inlineLabel>
+              <Label>Location</Label>
+              <Text>{location}</Text>
             </Item>
             <Item inlineLabel>
               <Label>Species:</Label>
               <Input value={this.state.species} onChangeText={ (species) => this.setState({ species })} />
             </Item>
-            <Item picker>
+            <Item>
               <Picker
                 mode="dropdown"
                 iosIcon={<Icon name="arrow-down" />}
@@ -93,21 +114,25 @@ export default class Add extends React.Component {
                 placeholder="Rarity"
                 placeholderStyle={{ color: "#bfc6ea" }}
                 placeholderIconColor="#007aff"
-                selectedValue={this.state.selected2}
+                selectedValue={this.state.rarity}
                 onValueChange={this.onValueChange2.bind(this)}
               >
-                <Picker.Item label="Common" value="01" />
-                <Picker.Item label="Rare" value="02" />
-                <Picker.Item label="Extremely rare" value="03" />
+                <Picker.Item label="Common" value="Common" />
+                <Picker.Item label="Rare" value="Rare" />
+                <Picker.Item label="Extremely rare" value="Extremely rare" />
               </Picker>
             </Item>
-            <Item inlineLabel last>
+            <Item inlineLabel>
               <Label>Notes:</Label>
               <Input value={this.state.notes} onChangeText={(notes) => this.setState({ notes })} />
             </Item>
           <Button block rounded style={{width: 200, backgroundColor: 'gray', margin: 10}} 
           onPress={() => this.save()}>
             <Text>Save</Text>
+          </Button>
+          <Button block rounded style={{width: 200, backgroundColor: 'gray', margin: 10}} 
+          onPress={() => this.query()}>
+            <Text>Query</Text>
           </Button>
           </Form>
         </Content>
