@@ -1,8 +1,8 @@
 import React from 'react';
-import { StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import {
   Container, Content, Picker, Text, Form, Item, Button, Label,
-  Input, Header, Body, Icon, Title
+  Input, Header, Body, Icon, Title, Toast
 } from "native-base";
 import DateComponent from '../components/DatePicker.js';
 import Timestamp from '../components/Timestamp.js';
@@ -12,20 +12,14 @@ const db = SQLite.openDatabase('birdwatcher.db');
 
 export default class Add extends React.Component {
   static navigationOptions = { header: null };
+  _isMounted = false;
   constructor(props) {
     super(props);
-    var d = new Date();
     this.state = {
-      isReady: false,
       species: '',
       rarity: 'Common',
       notes: '',
       timestamp: '',
-      year: d.getFullYear(),
-      month: d.getMonth(),
-      date: d.getDate(),
-      hours: d.getHours(),
-      minutes: d.getMinutes(),
       location: null,
       latitude: null,
       longitude: null,
@@ -33,13 +27,13 @@ export default class Add extends React.Component {
   }
 
   // gotta wait for the fonts to load
-  async componentWillMount() {
-    await Expo.Font.loadAsync({
-      'Roboto': require('native-base/Fonts/Roboto.ttf'),
-      'Roboto_medium': require('native-base/Fonts/Roboto_medium.ttf'),
-    })
-    .then(this.getLocation());
-    this.setState({ isReady: true });
+  async componentDidMount() {
+    this.getLocation();
+    this._isMounted = true
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
   }
 
   getLocation = async () => {
@@ -53,36 +47,48 @@ export default class Add extends React.Component {
     }
   }
 
-  query = () => {
-    db.transaction(transaction => {
-      transaction.executeSql('select * from sightings',
-        [],
-        (_, { rows: { _array } }) => console.log(_array));
-    });
-  }
-
   save = () => {
-    const { params } = this.props.navigation.state;
-    const timestamp = `${this.state.date}.${this.state.month}.${this.state.year} / ${this.state.hours}:${this.state.minutes}`
-    console.log(params.birds.length);
-    db.transaction(transaction => {
-      transaction.executeSql('insert into sightings (id, species, rarity, timestamp, latitude, longitude, notes) values (?, ?, ?, ?, ?, ?, ?)',
-      [params.birds.length, this.state.species, this.state.rarity, timestamp, this.state.latitude, this.state.longitude, this.state.notes]);
-    }, null, this.query())
+    const latitude = this.state.latitude ? this.state.latitude : '';
+    const longitude = this.state.longitude ? this.state.longitude : '';
+    const date = new Date();
+    const utc = date.toUTCString();
+    const pk = utc.replace(/ /g,'');  // timestamp are unique = easy primary key
+
+    try {
+      db.transaction(transaction => {
+        transaction.executeSql('insert into sightings (id, species, rarity, timestamp, latitude, longitude, notes) values (?, ?, ?, ?, ?, ?, ?)',
+        [pk, this.state.species, this.state.rarity, date.toUTCString(), latitude, longitude, this.state.notes]);
+      }, (error) => {
+        console.log(error.message);
+        Alert.alert(error.message)
+      }, this.success);
+    } catch (error) {
+      console.log(error);
+      Alert(error.message);
+    }
   }
 
-  
-  onValueChange2(value) {
+  success = () => {
+    this.props.navigation.state.params.onGoBack();
+    this.props.navigation.goBack();
+  }
+
+  cancel = () => {
+    const { goBack } = this.props.navigation;
+    goBack();
+
+  }
+
+  onRarityChange(value) {
     this.setState({
       rarity: value
     });
   }
 
   render() {
-    let location = this.state.location ? `${this.state.latitude}, ${this.state.longitude}` : '';
-
-    if (!this.state.isReady) {
-      return <Expo.AppLoading />;
+    let location;
+    if (this._isMounted) {
+      this.state.location ? `${this.state.latitude}, ${this.state.longitude}` : '';
     }
 
     return (
@@ -94,19 +100,20 @@ export default class Add extends React.Component {
         </Header>
         <Content>
           <Form style={{padding: 0}}>
-            <Item>
-              <Label>Date</Label>
+            <Item inlineLabel style={{ padding: 10 }}>
+              <Label>Date:</Label>
               <Timestamp />
             </Item>
-            <Item inlineLabel>
-              <Label>Location</Label>
+            <Item inlineLabel style={{ padding: 10 }}>
+              <Label>Location:</Label>
               <Text>{location}</Text>
             </Item>
             <Item inlineLabel>
               <Label>Species:</Label>
               <Input value={this.state.species} onChangeText={ (species) => this.setState({ species })} />
             </Item>
-            <Item>
+            <Item inlineLabel>
+              <Label>Rarity:</Label>
               <Picker
                 mode="dropdown"
                 iosIcon={<Icon name="arrow-down" />}
@@ -115,7 +122,7 @@ export default class Add extends React.Component {
                 placeholderStyle={{ color: "#bfc6ea" }}
                 placeholderIconColor="#007aff"
                 selectedValue={this.state.rarity}
-                onValueChange={this.onValueChange2.bind(this)}
+                onValueChange={this.onRarityChange.bind(this)}
               >
                 <Picker.Item label="Common" value="Common" />
                 <Picker.Item label="Rare" value="Rare" />
@@ -126,14 +133,16 @@ export default class Add extends React.Component {
               <Label>Notes:</Label>
               <Input value={this.state.notes} onChangeText={(notes) => this.setState({ notes })} />
             </Item>
-          <Button block rounded style={{width: 200, backgroundColor: 'gray', margin: 10}} 
-          onPress={() => this.save()}>
-            <Text>Save</Text>
-          </Button>
-          <Button block rounded style={{width: 200, backgroundColor: 'gray', margin: 10}} 
-          onPress={() => this.query()}>
-            <Text>Query</Text>
-          </Button>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', margin: 10 }}>
+              <Button danger block rounded style={{width: 150, margin: 10}} 
+              onPress={() => this.cancel()}>
+                <Text>Cancel</Text>
+              </Button>
+              <Button success block rounded style={{width: 150, margin: 10}} 
+              onPress={() => this.save()}>
+                <Text>Save</Text>
+              </Button>
+            </View>
           </Form>
         </Content>
       </Container>

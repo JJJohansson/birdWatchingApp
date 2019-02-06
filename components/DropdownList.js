@@ -1,11 +1,12 @@
 import React, { Component } from "react";
+import { Alert } from 'react-native';
 import { Container, H2, Content, Icon, Accordion, Text, View } from "native-base";
 
 export default class DropdownList extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            birds: props.birds
+            birds: props.birds,
         }
     }
 
@@ -16,10 +17,10 @@ export default class DropdownList extends Component {
         padding: 10,
         justifyContent: "space-between",
         alignItems: "center" ,
-        backgroundColor: "#c9c1b6",
+        backgroundColor: "#fff",
         borderTopWidth: 1,
         borderTopColor: "#000000" }}>
-      <Text style={{ fontWeight: "600" }}>
+        <Text style={{ fontWeight: "600" }}>
           {" "}{item.timestamp}
         </Text>
         {expanded
@@ -28,18 +29,27 @@ export default class DropdownList extends Component {
       </View>
     );
   }
+
   _renderContent(item) {
+    let location = item.latitude ? `${item.latitude}, ${item.longitude}` : 'unknown';
     return (
         <Content>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={styles.listItems}>
-                species: {item.species}
+                location: { location }
             </Text>
-            <Text style={styles.listItems}>
-                rarity: {item.rarity}
-            </Text>
-            <Text style={styles.listItems}>
-                notes: {item.notes}
-            </Text>
+            <Icon style={{ fontSize: 25, marginRight: 50 }} name="pin" onPress={() => Alert.alert('need to fix navigation lol')} />
+            <Icon style={{ fontSize: 18 }} name="trash" />
+          </View>
+          <Text style={styles.listItems}>
+              species: {item.species}
+          </Text>
+          <Text style={styles.listItems}>
+              rarity: {item.rarity}
+          </Text>
+          <Text style={styles.listItems}>
+              notes: {item.notes}
+          </Text>
         </Content>
     );
   }
