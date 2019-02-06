@@ -1,7 +1,31 @@
+/*
+
+  TODO:
+    Add.js
+      - fix the "Warning: Can't call setState (or forceUpdate) on an unmounted component."
+
+    DrowdownList.js
+      - Header
+        - Name of the bird species on the left side of the bar
+        - Timestamp (dd mmm yyyy hh:mm) on the right side of the bar.
+
+      - Content
+        - Information from top to bottom: rarity, location, notes
+
+      - Header and Content
+        - Header bar color needs to be darker
+        - Every other line in content needs to be in white and every other in some lightish color
+
+      - Expand buttons
+        - Plus should be arrow down and minus arrow up
+
+*/
+
+
 import React from 'react';
 import { StyleSheet, StatusBar } from 'react-native';
 import {
-  Container, Text, Body, Right, Button, Header, Title, Content
+  Container, Text, Body, Right, Button, Header, Title, Content, Icon
 } from "native-base";
 import DropdownList from '../components/DropdownList.js';
 import { SQLite } from 'expo';
@@ -46,13 +70,15 @@ export default class Home extends React.Component {
     this.updateSightings();
   }
 
-  deleteDB = () => {
+  deleteTable = () => {
     db.transaction(transaction => {
       transaction.executeSql(
         'delete from sightings;'
       );
     }, null, this.updateSightings);
   }
+
+  
 
   render() {
     if (this._isMounted) {
@@ -71,15 +97,13 @@ export default class Home extends React.Component {
             <Title style={{marginLeft: 10}}>Bird_Watcher</Title>
           </Body>
           <Right>
-            <Button hasText transparent onPress={() => navigate('Add', { onGoBack: () => this.onBack(),}) }>
-              <Text>New</Text>
-            </Button>
+            <Icon style={{ fontSize: 30, color: 'white', marginRight: 10 }} name="add-circle" onPress={() => navigate('Add', { onGoBack: () => this.onBack(),}) }/>
           </Right>
         </Header>
         <Content>
           { sightingsList }
           <Button block rounded style={{width: 200, backgroundColor: 'gray', margin: 10}} 
-          onPress={() => this.deleteDB()}>
+          onPress={() => this.deleteTable()}>
             <Text>HARD RESET</Text>
           </Button>
         </Content>
@@ -97,6 +121,10 @@ const styles = StyleSheet.create({
 
 /*
 
+
+            <Button hasText transparent onPress={() => navigate('Add', { onGoBack: () => this.onBack(),}) }>
+              <Text>New</Text>
+    </Button>
           
           <Button block rounded style={{width: 200, backgroundColor: 'gray', margin: 10}} 
           onPress={() => this.updateSightings()}>

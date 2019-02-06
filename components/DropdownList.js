@@ -6,8 +6,12 @@ export default class DropdownList extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            birds: props.birds,
+            birds: [],
         }
+    }
+
+    componentWillReceiveProps(props) {
+      this.setState({ birds: props.birds })
     }
 
   _renderHeader(item, expanded) {
@@ -15,9 +19,10 @@ export default class DropdownList extends Component {
       <View style={{
         flexDirection: "row",
         padding: 10,
+        height: 50,
         justifyContent: "space-between",
         alignItems: "center" ,
-        backgroundColor: "#fff",
+        backgroundColor: "#d3d3d3",
         borderTopWidth: 1,
         borderTopColor: "#000000" }}>
         <Text style={{ fontWeight: "600" }}>
@@ -33,7 +38,7 @@ export default class DropdownList extends Component {
   _renderContent(item) {
     let location = item.latitude ? `${item.latitude}, ${item.longitude}` : 'unknown';
     return (
-        <Content>
+        <Content style={{ paddingLeft: 20 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={styles.listItems}>
                 location: { location }
