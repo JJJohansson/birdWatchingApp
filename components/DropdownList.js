@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Alert } from 'react-native';
 import { Container, H2, Content, Icon, Accordion, Text, View } from "native-base";
+import { withNavigation } from 'react-navigation';
 
 export default class DropdownList extends Component {
     constructor(props) {
@@ -43,7 +44,7 @@ export default class DropdownList extends Component {
             <Text style={styles.listItems}>
                 location: { location }
             </Text>
-            <Icon style={{ fontSize: 25, marginRight: 50 }} name="pin" onPress={() => Alert.alert('need to fix navigation lol')} />
+            <Icon style={{ fontSize: 25, marginRight: 50 }} name="pin" onPress={() => this.props.navigation.navigate('MapScreen', {sighting: item})} />
             <Icon style={{ fontSize: 18 }} name="trash" />
           </View>
           <Text style={styles.listItems}>
@@ -60,6 +61,7 @@ export default class DropdownList extends Component {
   }
   
   render() {
+    const { navigate } = this.props.navigation;
     return (
       <Container>
         <Content padder style={{ backgroundColor: "#fff" }}>
@@ -84,3 +86,9 @@ const styles = {
         fontStyle: "italic",
     },
 }
+
+//export default withNavigation(DropdownList);
+
+
+                                    /* https://reactnavigation.org/docs/en/connecting-navigation-prop.html
+                                                       TÄMÄN AVULLA NAVIGOINTI TOIMIMAAN! */

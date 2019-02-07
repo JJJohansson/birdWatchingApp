@@ -87,7 +87,7 @@ export default class Home extends React.Component {
 
     const { navigate } = this.props.navigation;
     const birds = this.state.birds ? this.state.birds : null;
-    let sightingsList = this.state.birds ? <DropdownList birds={this.state.birds} /> : <Text>No sightings yet..</Text>
+    let sightingsList = this.state.birds ? <DropdownList birds={this.state.birds} navigation={this.props.navigation} /> : <Text>No sightings yet..</Text>
 
     return (
       <Container style={{ backgroundColor: "#FE5F55" }}>
