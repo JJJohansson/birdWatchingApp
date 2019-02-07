@@ -11,6 +11,7 @@ const db = SQLite.openDatabase('birdwatcher.db');
 
 export default class Add extends React.Component {
   static navigationOptions = { header: null };
+  _isMounted = false;
   constructor(props) {
     super(props);
     this.state = {
@@ -21,13 +22,17 @@ export default class Add extends React.Component {
       location: null,
       latitude: null,
       longitude: null,
-      d: new Date()
     };
   }
 
   // gotta wait for the fonts to load
   async componentDidMount() {
     this.getLocation();
+    this._isMounted = true
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
   }
 
   getLocation = async () => {
@@ -45,13 +50,13 @@ export default class Add extends React.Component {
     const latitude = this.state.latitude ? this.state.latitude : '';
     const longitude = this.state.longitude ? this.state.longitude : '';
     const date = new Date();
-    const utc = date.toUTCString();
-    const pk = utc.replace(/ /g,'');  // timestamp are unique = easy primary key
+    const timestamp = date.toUTCString().slice(0,date.toUTCString().length-7);
+    const pk = date.toUTCString().replace(/ /g,'');  // timestamps are unique = easy primary key
 
     try {
       db.transaction(transaction => {
         transaction.executeSql('insert into sightings (id, species, rarity, timestamp, latitude, longitude, notes) values (?, ?, ?, ?, ?, ?, ?)',
-        [pk, this.state.species, this.state.rarity, date.toUTCString(), latitude, longitude, this.state.notes]);
+        [pk, this.state.species, this.state.rarity, timestamp, latitude, longitude, this.state.notes]);
       }, (error) => {
         console.log(error.message);
         Alert.alert(error.message)
@@ -68,6 +73,7 @@ export default class Add extends React.Component {
   }
 
   cancel = () => {
+
     const { goBack } = this.props.navigation;
     goBack();
 
@@ -80,7 +86,7 @@ export default class Add extends React.Component {
   }
 
   render() {
-    let location =  this.state.location ? `${this.state.latitude}, ${this.state.longitude}` : '';
+    let location = this.state.location ? `${this.state.latitude}, ${this.state.longitude}` : '';
 
     return (
       <Container>
@@ -90,13 +96,21 @@ export default class Add extends React.Component {
           </Body>
         </Header>
         <Content>
-          <Form style={{padding: 10}}>
-            <Item stackedLabel>
-              <Label style={styles.label}>Species:</Label>
+          <Form style={{padding: 0}}>
+            <Item inlineLabel style={{ padding: 10 }}>
+              <Label>Date:</Label>
+              <Timestamp />
+            </Item>
+            <Item inlineLabel style={{ padding: 10 }}>
+              <Label>Location:</Label>
+              <Text>{location}</Text>
+            </Item>
+            <Item inlineLabel>
+              <Label>Species:</Label>
               <Input value={this.state.species} onChangeText={ (species) => this.setState({ species })} />
             </Item>
-            <Item picker>
-              <Label style={styles.label}>Rarity:</Label>
+            <Item inlineLabel>
+              <Label>Rarity:</Label>
               <Picker
                 mode="dropdown"
                 iosIcon={<Icon name="arrow-down" />}
@@ -112,21 +126,13 @@ export default class Add extends React.Component {
                 <Picker.Item label="Extremely rare" value="Extremely rare" />
               </Picker>
             </Item>
-            <Item disabled stackedLabel>
-              <Label style={styles.label}>Date:</Label>
-              <Input disabled placeholder={this.state.d.toUTCString()}/>
-            </Item>
-            <Item disabled stackedLabel>
-              <Label style={styles.label}>Location:</Label>
-              <Input disabled placeholder={location}/>
-            </Item>
-            <Item stackedLabel>
-              <Label style={styles.label}>Notes:</Label>
+            <Item inlineLabel>
+              <Label>Notes:</Label>
               <Input value={this.state.notes} onChangeText={(notes) => this.setState({ notes })} />
             </Item>
             <View style={{ flexDirection: 'row', justifyContent: 'center', margin: 10 }}>
-              <Button light block rounded style={{width: 150, margin: 10}} 
-                onPress={() => this.cancel()}>
+              <Button danger block rounded style={{width: 150, margin: 10}} 
+              onPress={() => this.cancel()}>
                 <Text>Cancel</Text>
               </Button>
               <Button success block rounded style={{width: 150, margin: 10}} 
@@ -142,8 +148,10 @@ export default class Add extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  label: {
-    fontSize: 15,
-    fontWeight: 'bold',
-  }
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
