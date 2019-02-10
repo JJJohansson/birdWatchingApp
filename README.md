@@ -5,6 +5,7 @@ The purpose of this app is to provide bird watching enthusiasts a way to log the
 
 ## Technologies used
 * React Native
+* NativeBase
 * SQLite
 * Expo
 
