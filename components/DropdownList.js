@@ -1,19 +1,17 @@
 import React, { Component } from "react";
-import { Alert } from 'react-native';
 import { Container, H2, Content, Icon, Accordion, Text, View } from "native-base";
-import { withNavigation } from 'react-navigation';
 
 export default class DropdownList extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            birds: [],
-        }
-    }
+  constructor(props) {
+      super(props);
+      this.state = {
+          birds: [],
+      }
+  }
 
-    componentWillReceiveProps(props) {
-      this.setState({ birds: props.birds })
-    }
+  componentWillReceiveProps(props) {
+    this.setState({ birds: props.birds })
+  }
 
   _renderHeader(item, expanded) {
     return (
@@ -27,7 +25,7 @@ export default class DropdownList extends Component {
         borderTopWidth: 1,
         borderTopColor: "#000000" }}>
         <Text style={{ fontWeight: "600" }}>
-          {" "}{item.timestamp}
+          {item.species} - {item.timestamp}
         </Text>
         {expanded
           ? <Icon style={{ fontSize: 18 }} name="remove-circle" />
@@ -40,13 +38,9 @@ export default class DropdownList extends Component {
     let location = item.latitude ? `${item.latitude}, ${item.longitude}` : 'unknown';
     return (
         <Content style={{ paddingLeft: 20 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={styles.listItems}>
-                location: { location }
-            </Text>
-            <Icon style={{ fontSize: 25, marginRight: 50 }} name="pin" onPress={() => this.props.navigation.navigate('MapScreen', {sighting: item})} />
-            <Icon style={{ fontSize: 18 }} name="trash" />
-          </View>
+          <Text style={styles.listItems}>
+              location: { location }
+          </Text>
           <Text style={styles.listItems}>
               species: {item.species}
           </Text>
@@ -61,7 +55,6 @@ export default class DropdownList extends Component {
   }
   
   render() {
-    const { navigate } = this.props.navigation;
     return (
       <Container>
         <Content padder style={{ backgroundColor: "#fff" }}>
@@ -86,9 +79,3 @@ const styles = {
         fontStyle: "italic",
     },
 }
-
-//export default withNavigation(DropdownList);
-
-
-                                    /* https://reactnavigation.org/docs/en/connecting-navigation-prop.html
-                                                       TÄMÄN AVULLA NAVIGOINTI TOIMIMAAN! */

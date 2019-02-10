@@ -5,12 +5,10 @@ import {
 } from 'react-navigation';
 import Home from './screens/Home';
 import Add from './screens/Add';
-import MapScreen from './screens/MapScreen';
 
 const AppNav = createStackNavigator({
   Home: { screen: Home },
   Add: { screen: Add  },
-  MapScreen: { screen: MapScreen  }
 });
 
 const MyApp = createAppContainer(AppNav);

@@ -2,9 +2,8 @@ import React from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import {
   Container, Content, Picker, Text, Form, Item, Button, Label,
-  Input, Header, Body, Icon, Title, Toast
+  Input, Header, Body, Icon, Title
 } from "native-base";
-import Timestamp from '../components/Timestamp.js';
 import { Location, Permissions, SQLite } from 'expo';
 
 const db = SQLite.openDatabase('birdwatcher.db');
@@ -12,13 +11,14 @@ const db = SQLite.openDatabase('birdwatcher.db');
 export default class Add extends React.Component {
   static navigationOptions = { header: null };
   _isMounted = false;
+  date = new Date();
   constructor(props) {
     super(props);
     this.state = {
       species: '',
       rarity: 'Common',
       notes: '',
-      timestamp: '',
+      timestamp: this.date.toUTCString().slice(0, this.date.toUTCString().length-7),
       location: null,
       latitude: null,
       longitude: null,
@@ -73,7 +73,6 @@ export default class Add extends React.Component {
   }
 
   cancel = () => {
-
     const { goBack } = this.props.navigation;
     goBack();
 
@@ -99,7 +98,7 @@ export default class Add extends React.Component {
           <Form style={{padding: 0}}>
             <Item inlineLabel style={{ padding: 10 }}>
               <Label>Date:</Label>
-              <Timestamp />
+              <Text>{this.state.timestamp}</Text>
             </Item>
             <Item inlineLabel style={{ padding: 10 }}>
               <Label>Location:</Label>
